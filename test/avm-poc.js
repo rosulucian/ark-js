@@ -1,11 +1,13 @@
 var ark = require("../index.js");
+var fs = require('fs');
+var path = require('path');
+
 var transaction = ark.transaction;
 var contract = ark.contract;
 
 var request = require("../node_modules/request");
-var crypto = require("../lib/transactions/crypto"),
-constants = require("../lib/constants.js"),
-    slots = require("../lib/time/slots.js");
+var crypto = require("../lib/transactions/crypto");
+var solc = require('solc');
 
 var testnet = 'http://127.0.0.1:4000';
 var mainNetEndpoint = 'https://api.arknode.net/peer/transactions';
@@ -77,17 +79,40 @@ function postTransaction(server, transaction)
 
 }
 
+function getCompiledContract(file, cb)
+{
+  if(!file)
+    return null;;
+
+  file = path.join(__dirname, file);
+
+  fs.readFile(file, 'utf8', function (err, data) {
+    if (err)
+      throw err;
+
+    var compiled = solc.compile(data);
+
+    cb(compiled);
+  });
+}
+
 configureNetwork(testnet, function(){
 
     createAcc();
 
-    var binary = 'blablabla';
+    getCompiledContract('simpleContract.sol', function(compiled) {
 
-    console.log('transfering from: ' + myAddress);
+      var bytecodes = [];
+
+      for (var contractName in compiled.contracts)
+      {
+        bytecodes.push(compiled.contracts[contractName].bytecode);
+      }
+
+      var contract = createContract(bytecodes[0], 1000, keys);
+      postTransaction(testnet, contract)
+    });
 
     var tx = createTransaction("a3N9LJ9YSsFHkDfi6tMTviSNwwRWNTvNTC", 1, null, keys);
-    var contract = createContract(binary, 1000, keys);
-
     // postTransaction(testnet, tx);
-    postTransaction(testnet, contract);
 });
