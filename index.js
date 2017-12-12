@@ -14,6 +14,8 @@ module.exports = {
 	multisignature : require("./lib/transactions/multisignature.js"),
 	/** @see module:transaction */
 	transaction : require("./lib/transactions/transaction.js"),
+	/** @see module:contract */
+	contract: require("./lib/transactions/contract.js"),
 	/** @see module:vote */
 	vote : require("./lib/transactions/vote.js"),
 	/** @see module:ipfs */

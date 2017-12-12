@@ -13,7 +13,7 @@ describe("Ark JS", function () {
 	});
 
 	it("should have properties", function () {
-		var properties = ["transaction", "signature", "vote", "delegate", "crypto"];
+		var properties = ["transaction", "signature", "vote", "delegate", "crypto", "contract"];
 
 		properties.forEach(function (property) {
 			(ark).should.have.property(property);
