@@ -82,7 +82,7 @@ function postTransaction(server, transaction)
 function getCompiledContract(file, cb)
 {
   if(!file)
-    return null;;
+    return null;
 
   file = path.join(__dirname, file);
 

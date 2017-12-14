@@ -1,17 +1,9 @@
 pragma solidity ^0.4.19;
 
-contract SimpleStorage {
+contract ReallySimple {
     uint storedData;
 
-    function SimpleStorage() public {
+    function ReallySimple() public {
       storedData = 1;
-    }
-
-    function set(uint x) public {
-        storedData = x;
-    }
-
-    function get() constant public returns (uint) {
-        return storedData;
     }
 }
