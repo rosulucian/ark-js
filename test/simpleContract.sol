@@ -4,6 +4,10 @@ contract ReallySimple {
     uint storedData;
 
     function ReallySimple() public {
-      storedData = 1;
+      storedData = 2;
+    }
+
+    function Add(uint x) public {
+      storedData += x;
     }
 }

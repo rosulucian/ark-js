@@ -11,23 +11,25 @@ var contractCall = ark.contractCall;
 var request = require("../node_modules/request");
 var crypto = require("../lib/transactions/crypto");
 var solc = require('solc');
+var abi = require('ethereumjs-abi');
 
 var testnet = 'http://127.0.0.1:4000';
 var mainNetEndpoint = 'https://api.arknode.net/peer/transactions';
 var config = {}; // network config
 
 // account
-var keys = 'height dance bottom plastic circle scrap will creek invest fever degree oven';
+var secret = 'height dance bottom plastic circle scrap will creek invest fever degree oven';
+var keys = '';
 var myAddress = '';
 
 var createTransaction = transaction.createTransaction;
 var createContract = contract.createContract;
 var createContractCall = contractCall.createContractCall;
 
-function createAcc() {
-  keys = crypto.getKeys(keys);
+(function () {
+  keys = crypto.getKeys(secret);
   myAddress = crypto.getAddress(keys.publicKey);
-}
+})();
 
 
 function configureNetwork(server, cb) {
@@ -109,14 +111,16 @@ function getCompiledContract(file, cb) {
   });
 }
 
-vorpal.command('deploy', 'deploys contract')
+vorpal.command('deploy [file]', 'deploys contract')
   .action(function (args, cb) {
 
     configureNetwork(testnet, function () {
 
-      createAcc();
+      // createAcc();
 
-      getCompiledContract('simpleContract.sol', function (compiled) {
+      var file = args.file ? args.file : 'simpleContract.sol';
+
+      getCompiledContract(file, function (compiled) {
 
         var bytecodes = [];
 
@@ -129,38 +133,68 @@ vorpal.command('deploy', 'deploys contract')
         postTransaction(testnet, contract, function (err, resp, body) {
 
           console.log(err || body);
-          cb();
+          return cb();
         })
       });
     });
   });
 
-vorpal.command('call <address>', 'calls contract')
+vorpal.command('call <address> [abifile]', 'calls the first method of the contract')
   .action(function (args, cb) {
 
-    configureNetwork(testnet, function () {
+    var contractAddress = args.address;
 
-      createAcc();
+    function callContract(data) {
 
-      var txId = args.address;
+      console.log(data);
 
-      getFromNode(testnet + '/api/transactions/get?id=' + txId, function (err, res, bd) {
+      getFromNode(testnet + '/api/accounts?address=' + contractAddress, function (err, res, bd) {
 
-        if (err || !JSON.parse(bd).success || !JSON.parse(bd).transaction) {
+        if (err || !JSON.parse(bd).success) {
           console.log(err);
-          cb();
+          return cb();
         }
 
-        var contractAddress = JSON.parse(bd).transaction.recipientId;
+        var contract = JSON.parse(bd);
+        var contractAddress = contract.account.address;
 
-        var call = createContractCall(contractAddress, ' ', 1000, keys);
+        var call = createContractCall(contractAddress, data, 1000, keys);
 
         postTransaction(testnet, call, function (err, res, body) {
           console.log(err || body);
 
-          cb();
+          return cb();
         });
+      });
+    }
 
+    configureNetwork(testnet, function () {
+
+      // createAcc();
+
+      getCompiledContract('simpleContract.sol', function (compiled) {
+
+        var contracts = [];
+        var data = '';
+
+        for (var contractName in compiled.contracts) {
+
+          compiled.contracts[contractName].interface = JSON.parse(compiled.contracts[contractName].interface);
+
+          contracts.push(compiled.contracts[contractName]);
+        }
+
+        var contract = contracts[0];
+
+        data = contract.functionHashes[Object.keys(contract.functionHashes)[0]];
+
+        var param = abi.rawEncode(['uint'], [1]).toString('hex');
+
+        data += param;
+
+        console.log(param);
+
+        callContract(data);
       });
     });
   });
@@ -168,51 +202,3 @@ vorpal.command('call <address>', 'calls contract')
 vorpal
   .delimiter('ark>')
   .show();
-
-// configureNetwork(testnet, function () {
-
-//   createAcc();
-
-//   getCompiledContract('simpleContract.sol', function (compiled) {
-
-//     var bytecodes = [];
-
-//     for (var contractName in compiled.contracts) {
-//       bytecodes.push(compiled.contracts[contractName].bytecode);
-//     }
-
-//     var contract = createContract(bytecodes[0], 1000, keys);
-
-//     postTransaction(testnet, contract, getContractAndCall)
-//   });
-
-//   function getContractAndCall(err, res, body) {
-
-//     if (err) {
-//       console.log(err);
-//       return;
-//     }
-
-//     var txId = body.transactionIds[0];
-
-//     //wait for tx to be mined
-//     setTimeout(function () {
-//       getFromNode(testnet + '/api/transactions/get?id=' + txId, function (err, res, bd) {
-
-//         if (err || !JSON.parse(bd).success) {
-//           console.log(err);
-//           return;
-//         }
-
-//         var contractAddress = JSON.parse(bd).transaction.recipientId;
-
-//         var call = createContractCall(contractAddress, ' ', 1000, keys);
-
-//         postTransaction(testnet, call, function(err, res, body) {
-//           console.log(err || body);
-//         });
-
-//       });
-//     }, 10000);
-//   }
-// });
