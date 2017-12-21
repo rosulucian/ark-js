@@ -8,6 +8,6 @@ contract ReallySimple {
     }
 
     function Add(uint x) public {
-      storedData += x;
+      storedData = storedData + x;
     }
 }

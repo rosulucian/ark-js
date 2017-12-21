@@ -116,8 +116,6 @@ vorpal.command('deploy [file]', 'deploys contract')
 
     configureNetwork(testnet, function () {
 
-      // createAcc();
-
       var file = args.file ? args.file : 'simpleContract.sol';
 
       getCompiledContract(file, function (compiled) {
@@ -170,8 +168,6 @@ vorpal.command('call <address> [abifile]', 'calls the first method of the contra
 
     configureNetwork(testnet, function () {
 
-      // createAcc();
-
       getCompiledContract('simpleContract.sol', function (compiled) {
 
         var contracts = [];
@@ -188,11 +184,11 @@ vorpal.command('call <address> [abifile]', 'calls the first method of the contra
 
         data = contract.functionHashes[Object.keys(contract.functionHashes)[0]];
 
-        var param = abi.rawEncode(['uint'], [1]).toString('hex');
+        var param = abi.rawEncode(['uint'], [5]).toString('hex');
 
         data += param;
 
-        console.log(param);
+        console.log("call data: " + data);
 
         callContract(data);
       });
