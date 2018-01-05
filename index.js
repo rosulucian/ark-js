@@ -16,6 +16,8 @@ module.exports = {
 	transaction : require("./lib/transactions/transaction.js"),
 	/** @see module:contract */
 	contract: require("./lib/transactions/contract.js"),
+	/** @see module:contractCall */
+	contractCall: require("./lib/transactions/contractcall.js"),
 	/** @see module:vote */
 	vote : require("./lib/transactions/vote.js"),
 	/** @see module:ipfs */
